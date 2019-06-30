@@ -80,7 +80,14 @@ class FullscreenActivity : AppCompatActivity() {
         false
     }
 
+    override fun onKeyDown(keyCode: Int, e: KeyEvent?): Boolean {
+
+        view.loadUrl("javascript: keyHandler({'keycode':'" + keyCode + "/" + e?.scanCode + "'});")
+        return super.onKeyDown(keyCode, e)
+    }
+
     override fun dispatchKeyEvent(e: KeyEvent?): Boolean {
+        return super.dispatchKeyEvent(e)
         if (e?.keyCode == KeyEvent.KEYCODE_BACK)
         {
             if (e.action == 0) view.loadUrl("javascript: tmf();")
@@ -91,7 +98,7 @@ class FullscreenActivity : AppCompatActivity() {
         {
             if (e?.action == 0) view.loadUrl("javascript: keyHandler({'keycode':'" + e.keyCode + "/" + e.scanCode + "'});")
         }
-        return super.dispatchKeyEvent(e)
+
     }
 
     fun getMac(context: Context): String {
