@@ -42,6 +42,8 @@ import android.os.Environment
 import android.view.GestureDetector
 import android.view.MotionEvent
 
+import android.Manifest
+import android.support.v4.app.ActivityCompat
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
@@ -86,18 +88,26 @@ class FullscreenActivity : AppCompatActivity() {
         return super.onKeyDown(keyCode, e)
     }
 
+    override fun onKeyLongPress(keyCode: Int, event: KeyEvent?): Boolean {
+        println("onKeyLongPress "+keyCode)
+
+        return super.onKeyLongPress(keyCode, event)
+    }
+
     override fun dispatchKeyEvent(e: KeyEvent?): Boolean {
-        return super.dispatchKeyEvent(e)
         if (e?.keyCode == KeyEvent.KEYCODE_BACK)
         {
-            if (e.action == 0) view.loadUrl("javascript: tmf();")
+            println("dispatchKeyEvent KEYCODE_BACK")
+            if (e.isLongPress) android.os.Process.killProcess(android.os.Process.myPid())
+            else if (e.action == 1) view.loadUrl("javascript: tmf();")
             return true
         }
+        else return super.dispatchKeyEvent(e)
         //  else if (e.KeyCode == Keycode.DpadCenter || e.KeyCode == Keycode.DpadDown || e.KeyCode == Keycode.DpadLeft || e.KeyCode == Keycode.DpadRight || e.KeyCode == Keycode.DpadUp) return true;
-        else
-        {
-            if (e?.action == 0) view.loadUrl("javascript: keyHandler({'keycode':'" + e.keyCode + "/" + e.scanCode + "'});")
-        }
+       // else
+       // {
+           // if (e?.action == 0) view.loadUrl("javascript: keyHandler({'keycode':'" + e.keyCode + "/" + e.scanCode + "'});")
+       // }
 
     }
 
@@ -127,6 +137,12 @@ class FullscreenActivity : AppCompatActivity() {
 
     fun checkPermission(permission: String, activity: Activity): Boolean {
         return ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun makeRequest(perm: String) {
+        ActivityCompat.requestPermissions(this,
+            arrayOf(perm),
+            101)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -251,7 +267,23 @@ class FullscreenActivity : AppCompatActivity() {
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
     }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: kotlin.Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            101 -> {
 
+                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    view.loadUrl("javascript:page_rs('_reload')")
+
+                } else {
+
+                }
+            }
+        }
+    }
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
 
@@ -688,8 +720,11 @@ class FullscreenActivity : AppCompatActivity() {
                 else connection.connect()
                 println(connection.responseCode)
                 if(connection.responseCode!= 200) {
+                    result+="Error: "+connection.responseCode;
                     printToast("Error connect: "+connection.responseCode)
-                    view.loadUrl("javascript:showinform('Error connect: "+connection.responseCode+"',1500)")
+                  //  this@FullscreenActivity.runOnUiThread {
+                        //this@FullscreenActivity.view.loadUrl("javascript:showinform('Error connect: " + connection.responseCode + "',1500)")
+                    //}
                 }
                 if(verbose) {
                     for (el in connection.headerFields) {
@@ -701,8 +736,14 @@ class FullscreenActivity : AppCompatActivity() {
             }
             catch (e:java.lang.Exception)
             {
+               // this@FullscreenActivity.runOnUiThread {
+                    //this@FullscreenActivity.view.loadUrl("javascript:Main.showLoad(0);")
+                    //this@FullscreenActivity.view.loadUrl("javascript:showinform('Error connect: " + connection.responseCode + "',1500)")
+                //}
+                println("getRequest EXCEPT")
+                result+="Error: "+e.message
                 println(e.printStackTrace())
-
+                printToast("Error connect: "+e.message)
                 printToast(e.message)
             }
             finally {
@@ -712,8 +753,13 @@ class FullscreenActivity : AppCompatActivity() {
         }
         fun printToast(text: String?)
         {
-            //toasting the text
-            Toast.makeText(this@FullscreenActivity,text,Toast.LENGTH_SHORT).show()
+            try {
+                //toasting the text
+                this@FullscreenActivity.runOnUiThread {  Toast.makeText(this@FullscreenActivity, text, Toast.LENGTH_SHORT).show()}
+            }
+            catch(e:java.lang.Exception){
+                println(e.printStackTrace())
+            }
         }
     }
 
@@ -771,7 +817,10 @@ class FullscreenActivity : AppCompatActivity() {
                 }
             }
         }
-        else CH.put(JSONObject("{\"title\":\"check Permission READ_EXTERNAL_STORAGE\"}"))
+        else {
+            makeRequest(Manifest.permission.READ_EXTERNAL_STORAGE)
+            CH.put(JSONObject("{\"title\":\"check Permission READ_EXTERNAL_STORAGE\"}"))
+        }
         val PL=JSONObject()
         PL.put("channels",CH)
         println(PL)
