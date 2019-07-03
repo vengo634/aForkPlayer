@@ -2,7 +2,7 @@ var server=["http://getlist5.obovse.ru/jsapp/proxy/https://raw.githubusercontent
 var box_client="aForkPlayer2.5";
 var loader_platform="aforkplayer_apk";
 var version_client="aForkPlayer3.0";
-var version_local_files=190701;
+var version_local_files=190703;
 var version_local_js=1;
 
 var ttId;

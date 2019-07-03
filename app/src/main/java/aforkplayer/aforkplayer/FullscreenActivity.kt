@@ -204,7 +204,7 @@ class FullscreenActivity : AppCompatActivity() {
         //else serial = android.os.Build.SERIAL
         var tuid = android.provider.Settings.Secure.getString(this.contentResolver, android.provider.Settings.Secure.ANDROID_ID)
         var ru = RootUtil(this)
-        initial = getMac(this) + "|" + getMac(this) + "|" + android.os.Build.MODEL + " sdk " + android.os.Build.VERSION.SDK_INT + "|" + "aForkPlayer2.57|6.0|" + serial+"|"+ getBt(this)+"|"+tuid+"|"+ru.isDeviceRooted
+        initial = getMac(this) + "|" + getMac(this) + "|" + android.os.Build.MODEL + " sdk " + android.os.Build.VERSION.SDK_INT + "|" + "aForkPlayer2.57|6.1|" + serial+"|"+ getBt(this)+"|"+tuid+"|"+ru.isDeviceRooted
         println("addJavascriptInterface")
         view.addJavascriptInterface(andr(this,this), "andr")
         view.loadUrl("file:///android_asset/index.html")
@@ -216,6 +216,10 @@ class FullscreenActivity : AppCompatActivity() {
         mVisible = true
 
         val gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onLongPress(e: MotionEvent?) {
+                Log.d("myApp", "onLongPress")
+                view.loadUrl("javascript: keyHandler({'keycode':VK_RED});");
+            }
             override fun onDoubleTap(e: MotionEvent?): Boolean {
                 Log.d("myApp", "double tap")
                 view.loadUrl("javascript: keyHandler({'keycode':VK_ENTER});");
@@ -636,9 +640,27 @@ class FullscreenActivity : AppCompatActivity() {
                         {
                             var pattern = "\\?(host=remotefo.rk&?)?(..*?)\\/?(&|$)".toRegex().find(httpUrl)!!.groupValues
                             var d=pattern[2]
-                            println("GET LOCAL: " +d)
-                           s = getFiles(d)
+
+                            //Manual Plugin with ID Plugin1
+                            if(d=="Plugin1") {
+                                var CH=JSONArray()
+                                var channel =
+                                    JSONObject("{\"title\":\"Great ideas to create Plugin for aForkPlayer\",\"description\":\"Manual Link on Plugin or Playlist<br>Open Project https://github.com/alexkdpu/aForkPlayer in Android Studio (Kotlin) and develop Plugin or edit application and paste your Link on playlist \",\"playlist_url\":\"http://remotefo.rk/treeview?Plugin1\"}")
+                                    CH.put(channel)
+                                    channel = JSONObject("{\"title\":\"YouTube link\",\"description\":\"Manual Link on Plugin or Playlist<br>Open Project https://github.com/alexkdpu/aForkPlayer in Android Studio (Kotlin) and develop Plugin or edit application and paste your Link on playlist \",\"stream_url\":\"https://www.youtube.com/watch?v=aWyOoN7knKU\"}")
+                                CH.put(channel)
+                                val PL=JSONObject()
+                                PL.put("channels",CH)
+                                PL.put("title","Android Plugin 1")
+                                s=PL.toString()
+                            }
+                            //END Manual Link on Plugin or Playlist
+                            else {
+                                println("GET LOCAL: " + d)
+                                s = getFiles(d)
+                            }
                         }
+
                         var r = JSONObject()
                         r.put("headers",h)
                         r.put("response",s)
@@ -794,8 +816,14 @@ class FullscreenActivity : AppCompatActivity() {
             var res=""
             var files =  File(d).listFiles()
             if(d=="/") {
-                var channel=JSONObject("{\"title\":\"External Storage\",\"playlist_url\":\"http://remotefo.rk/treeview?"+Environment.getExternalStorageDirectory().absolutePath+"\"}")
+                //Manual Link on Plugin or Playlist
+                var channel=JSONObject("{\"logo_30x30\":\"fimg/pluginicon.png\",\"title\":\"Manual Link on Plugin or Playlist\",\"description\":\"Manual Link on Plugin or Playlist<br>Open Project https://github.com/alexkdpu/aForkPlayer in Android Studio (Kotlin) and develop Plugin or edit application to paste your Link on playlist \",\"playlist_url\":\"http://remotefo.rk/treeview?Plugin1\"}")
                 CH.put(channel)
+                //END Manual Link on Plugin or Playlist
+
+                channel=JSONObject("{\"title\":\"External Storage\",\"playlist_url\":\"http://remotefo.rk/treeview?"+Environment.getExternalStorageDirectory().absolutePath+"\"}")
+                CH.put(channel)
+
 
                 files =  File("/storage").listFiles()
             }
