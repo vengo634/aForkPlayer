@@ -1,5 +1,6 @@
 # aForkPlayer
-Android Client ForkPlayer
+Android Client ForkPlayer создан в Android Studio (Kotlin)
+
 Версия ForkPlayer для Android 4.2 и выше
 
 Управление жестами(на свободной от кнопок и списка части экрана):
