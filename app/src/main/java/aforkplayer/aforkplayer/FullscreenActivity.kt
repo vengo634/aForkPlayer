@@ -83,8 +83,10 @@ class FullscreenActivity : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, e: KeyEvent?): Boolean {
+        println(e)
+        var textKey="keyCode=(.*?)(,|$)".toRegex().find(e.toString())!!.groupValues[1]
 
-        view.loadUrl("javascript: keyHandler({'keycode':'" + keyCode + "/" + e?.scanCode + "'});")
+        view.loadUrl("javascript: keyHandler({'keycode':'" + keyCode + "/" + textKey + "'});")
         return super.onKeyDown(keyCode, e)
     }
 
@@ -228,40 +230,26 @@ class FullscreenActivity : AppCompatActivity() {
             var x1=0
             override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
                 x1++
-                // Console.WriteLine("OnScroll " + distanceX + "/" + distanceY);
-                if (distanceX > 4)
+                println("OnScroll " + distanceX + "/" + distanceY);
+                if (distanceX > 15)
                 {
-                    if (x1 % 3 == 0) view.loadUrl("javascript: if(handler=='qual') keyHandler({'keycode':VK_RIGHT});");
+                    if (x1 % 3 == 0) view.loadUrl("javascript: keyHandler({'keycode':VK_LEFT});");
                 }
-                else if (distanceX < -4)
+                else if (distanceX < -15)
                 {
-                    if (x1 % 3 == 0) view.loadUrl("javascript: if(handler=='qual') keyHandler({'keycode':VK_LEFT});");
+                    if (x1 % 3 == 0) view.loadUrl("javascript: keyHandler({'keycode':VK_RIGHT});");
                 }
-                if (distanceY > 4)
+                if (distanceY > 15)
                 {
                     if (x1 % 3 == 0) view.loadUrl("javascript: keyHandler({'keycode':VK_UP});");
 
                 }
-                else if (distanceY < -4)
+                else if (distanceY < -15)
                 {
                     if (x1 % 3 == 0) view.loadUrl("javascript: keyHandler({'keycode':VK_DOWN});");
 
                 }
                 return super.onScroll(e1, e2, distanceX, distanceY)
-            }
-            override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-                Log.d("onFling", "$velocityX / $velocityY")
-                if (velocityX > 2000)
-                {
-                    // Console.WriteLine(">2000");
-                    view.loadUrl("javascript: if(insetSelect<(insetCount+2)&&handler=='menu') {insetSelect++;Main.showInset();Main.PlayInset();}");
-                }
-                else if (velocityX < -2000)
-                {
-                    // Console.WriteLine("<1000");
-                    view.loadUrl("javascript: if(insetSelect>0&&handler=='menu') {insetSelect--;Main.showInset();Main.PlayInset();}");
-                }
-                return super.onFling(e1, e2, velocityX, velocityY)
             }
         })
         view.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
