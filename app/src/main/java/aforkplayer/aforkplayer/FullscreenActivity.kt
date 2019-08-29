@@ -44,6 +44,10 @@ import android.view.MotionEvent
 
 import android.Manifest
 import android.support.v4.app.ActivityCompat
+import android.util.Base64
+import android.util.Xml
+import java.nio.charset.Charset
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
@@ -461,6 +465,9 @@ class FullscreenActivity : AppCompatActivity() {
             var s = ""
             if(cmd == "initial") s = initial
             else if(cmd=="hideSystemUI") hideSystemUI()
+            else if (cmd.indexOf("popUP") == 0){
+                printToast(cmd.substring(5))
+            }
             else if (cmd.indexOf("curl") == 0)
             {
                 s = ParseCurlRequest(cmd)
@@ -483,12 +490,13 @@ class FullscreenActivity : AppCompatActivity() {
                             h = s.substring(0, x)
                             s = s.substring(x + 2)
                         }
-                        r.put("headers",h)
-                        r.put("response",s)
+                        r.put("type","base64")
+                        r.put("headers",Base64.encodeToString(h.toByteArray(), Base64.DEFAULT))
+                        r.put("response", Base64.encodeToString(s.toByteArray(), Base64.DEFAULT))
                         println(r)
                         this@FullscreenActivity.runOnUiThread{
-                            println("answstream $m")
-                            this@FullscreenActivity.view.loadUrl("javascript: try{waitcurl(" + r + ",'" + m + "');}catch(e){console.log(e);}")
+                            println("answstream b64 $m")
+                            this@FullscreenActivity.view.loadUrl("javascript: try{waitcurl(" + r + ",'" + m + "');}catch(e){andr.cmd('popUP '+e.toString());console.log(e);}")
                         }
                     }
                     catch (e:java.lang.Exception)
@@ -650,11 +658,12 @@ class FullscreenActivity : AppCompatActivity() {
                         }
 
                         var r = JSONObject()
-                        r.put("headers",h)
-                        r.put("response",s)
+                        r.put("type","base64")
+                        r.put("headers",Base64.encodeToString(h.toByteArray(), Base64.DEFAULT))
+                        r.put("response", Base64.encodeToString(s.toByteArray(), Base64.DEFAULT))
                         println(r)
                         this@FullscreenActivity.runOnUiThread{
-                            println("answstream $m")
+                            println("answstream b64p $m")
                             this@FullscreenActivity.view.loadUrl("javascript: try{waitcurl(" + r + ",'" + m + "');}catch(e){console.log(e);}")
                         }
                     }
