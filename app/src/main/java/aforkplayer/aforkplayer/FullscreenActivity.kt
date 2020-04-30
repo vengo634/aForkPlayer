@@ -3,10 +3,8 @@ package aforkplayer.aforkplayer
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.view.View
 import kotlinx.android.synthetic.main.activity_fullscreen.*
 import android.os.Build
-import android.view.KeyEvent
 import android.net.MacAddress
 import android.net.wifi.WifiManager
 import android.R.string
@@ -39,13 +37,12 @@ import android.content.Intent
 import android.os.Environment
 
 
-import android.view.GestureDetector
-import android.view.MotionEvent
-
 import android.Manifest
+import android.content.res.Configuration
 import android.support.v4.app.ActivityCompat
 import android.util.Base64
 import android.util.Xml
+import android.view.*
 import java.nio.charset.Charset
 
 /**
@@ -74,11 +71,7 @@ class FullscreenActivity : AppCompatActivity() {
     lateinit var view: WebView
     var initial: String =""
     private val mHideRunnable = Runnable { hide() }
-    /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
-     */
+
     private val mDelayHideTouchListener = View.OnTouchListener { _, _ ->
         if (AUTO_HIDE) {
             delayedHide(AUTO_HIDE_DELAY_MILLIS)
@@ -87,10 +80,10 @@ class FullscreenActivity : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, e: KeyEvent?): Boolean {
-        println(e)
-        var textKey="keyCode=(.*?)(,|$)".toRegex().find(e.toString())!!.groupValues[1]
+       // println(e)
+       // var textKey="keyCode=(.*?)(,|$)".toRegex().find(e.toString())!!.groupValues[1]
 
-        view.loadUrl("javascript: keyHandler({'keycode':'" + keyCode + "/" + textKey + "'});")
+       // view.loadUrl("javascript: keyHandler({'keycode':'" + keyCode + "/" + textKey + "'});")
         return super.onKeyDown(keyCode, e)
     }
 
@@ -108,7 +101,12 @@ class FullscreenActivity : AppCompatActivity() {
             else if (e.action == 1) view.loadUrl("javascript: tmf();")
             return true
         }
-        else return super.dispatchKeyEvent(e)
+        else {
+            println("dispatchKeyEvent")
+            var textKey="keyCode=(.*?)(,|$)".toRegex().find(e.toString())!!.groupValues[1]
+            if (e?.action == 0) view.loadUrl("javascript: keyHandler({'keycode':'" + e.keyCode + "/" + textKey + "'});")
+            return super.dispatchKeyEvent(e)
+        }
         //  else if (e.KeyCode == Keycode.DpadCenter || e.KeyCode == Keycode.DpadDown || e.KeyCode == Keycode.DpadLeft || e.KeyCode == Keycode.DpadRight || e.KeyCode == Keycode.DpadUp) return true;
        // else
        // {
@@ -210,7 +208,7 @@ class FullscreenActivity : AppCompatActivity() {
         //else serial = android.os.Build.SERIAL
         var tuid = android.provider.Settings.Secure.getString(this.contentResolver, android.provider.Settings.Secure.ANDROID_ID)
         var ru = RootUtil(this)
-        initial = getMac(this) + "|" + getMac(this) + "|" + android.os.Build.MODEL + " sdk " + android.os.Build.VERSION.SDK_INT + "|" + "aForkPlayer2.57|6.1|" + serial+"|"+ getBt(this)+"|"+tuid+"|"+ru.isDeviceRooted
+        initial = getMac(this) + "|" + getMac(this) + "|" + android.os.Build.MODEL + " sdk " + android.os.Build.VERSION.SDK_INT + "|" + "aForkPlayer2.57|6.3|" + serial+"|"+ getBt(this)+"|"+tuid+"|"+ru.isDeviceRooted
         println("addJavascriptInterface")
         view.addJavascriptInterface(andr(this,this), "andr")
         view.loadUrl("file:///android_asset/index.html")
@@ -232,6 +230,7 @@ class FullscreenActivity : AppCompatActivity() {
                 return true
             }
             var x1=0
+
             override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
                 x1++
                 println("OnScroll " + distanceX + "/" + distanceY);
@@ -255,13 +254,26 @@ class FullscreenActivity : AppCompatActivity() {
                 }
                 return super.onScroll(e1, e2, distanceX, distanceY)
             }
+
         })
+
         view.setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
+
         // Set up the user interaction to manually show or hide the system UI.
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        view.loadUrl("javascript: document.getElementsByTagName('body')[0].dispatchEvent(new KeyboardEvent('keydown',{'key':' '}));")
+        super.onConfigurationChanged(newConfig)
+    }
+            override fun onWindowFocusChanged(hasFocus: Boolean) {
+        //super.onWindowFocusChanged(hasFocus)
+        println("OnWindowFocusChanged "+hasFocus);
+        view.loadUrl("javascript: focuschange('"+hasFocus+"');")
     }
     override fun onRequestPermissionsResult(
         requestCode: Int,
