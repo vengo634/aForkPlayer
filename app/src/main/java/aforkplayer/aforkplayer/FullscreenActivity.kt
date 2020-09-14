@@ -80,10 +80,10 @@ class FullscreenActivity : AppCompatActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, e: KeyEvent?): Boolean {
-       // println(e)
-       // var textKey="keyCode=(.*?)(,|$)".toRegex().find(e.toString())!!.groupValues[1]
+        // println(e)
+        // var textKey="keyCode=(.*?)(,|$)".toRegex().find(e.toString())!!.groupValues[1]
 
-       // view.loadUrl("javascript: keyHandler({'keycode':'" + keyCode + "/" + textKey + "'});")
+        // view.loadUrl("javascript: keyHandler({'keycode':'" + keyCode + "/" + textKey + "'});")
         return super.onKeyDown(keyCode, e)
     }
 
@@ -108,10 +108,10 @@ class FullscreenActivity : AppCompatActivity() {
             return super.dispatchKeyEvent(e)
         }
         //  else if (e.KeyCode == Keycode.DpadCenter || e.KeyCode == Keycode.DpadDown || e.KeyCode == Keycode.DpadLeft || e.KeyCode == Keycode.DpadRight || e.KeyCode == Keycode.DpadUp) return true;
-       // else
-       // {
-           // if (e?.action == 0) view.loadUrl("javascript: keyHandler({'keycode':'" + e.keyCode + "/" + e.scanCode + "'});")
-       // }
+        // else
+        // {
+        // if (e?.action == 0) view.loadUrl("javascript: keyHandler({'keycode':'" + e.keyCode + "/" + e.scanCode + "'});")
+        // }
 
     }
 
@@ -270,7 +270,7 @@ class FullscreenActivity : AppCompatActivity() {
         view.loadUrl("javascript: document.getElementsByTagName('body')[0].dispatchEvent(new KeyboardEvent('keydown',{'key':' '}));")
         super.onConfigurationChanged(newConfig)
     }
-            override fun onWindowFocusChanged(hasFocus: Boolean) {
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
         //super.onWindowFocusChanged(hasFocus)
         println("OnWindowFocusChanged "+hasFocus);
         view.loadUrl("javascript: focuschange('"+hasFocus+"');")
@@ -403,9 +403,9 @@ class FullscreenActivity : AppCompatActivity() {
 
     private inner class andr(context: Context,activity: Activity)
     {
-       // fun andr(context: Context, activity: Activity) {
-           // context = context
-           // this.activity = activity
+        // fun andr(context: Context, activity: Activity) {
+        // context = context
+        // this.activity = activity
         //}
         var thread = Thread()
         fun getMXPackageInfo(): String
@@ -496,7 +496,7 @@ class FullscreenActivity : AppCompatActivity() {
                         var m=mode
                         println("stream $m")
                         var r = JSONObject()
-                        var x = s.indexOf("\n\n");
+                        var x = s.indexOf("\n\n")
                         if (x > 0 && cmd.indexOf(" -i") > 0)
                         {
                             h = s.substring(0, x)
@@ -654,8 +654,8 @@ class FullscreenActivity : AppCompatActivity() {
                                 var CH=JSONArray()
                                 var channel =
                                     JSONObject("{\"title\":\"Great ideas to create Plugin for aForkPlayer\",\"description\":\"Manual Link on Plugin or Playlist<br>Open Project https://github.com/alexkdpu/aForkPlayer in Android Studio (Kotlin) and develop Plugin or edit application and paste your Link on playlist \",\"playlist_url\":\"http://remotefo.rk/treeview?Plugin1\"}")
-                                    CH.put(channel)
-                                    channel = JSONObject("{\"title\":\"YouTube link\",\"description\":\"Manual Link on Plugin or Playlist<br>Open Project https://github.com/alexkdpu/aForkPlayer in Android Studio (Kotlin) and develop Plugin or edit application and paste your Link on playlist \",\"stream_url\":\"https://www.youtube.com/watch?v=aWyOoN7knKU\"}")
+                                CH.put(channel)
+                                channel = JSONObject("{\"title\":\"YouTube link\",\"description\":\"Manual Link on Plugin or Playlist<br>Open Project https://github.com/alexkdpu/aForkPlayer in Android Studio (Kotlin) and develop Plugin or edit application and paste your Link on playlist \",\"stream_url\":\"https://www.youtube.com/watch?v=aWyOoN7knKU\"}")
                                 CH.put(channel)
                                 val PL=JSONObject()
                                 PL.put("channels",CH)
@@ -726,7 +726,6 @@ class FullscreenActivity : AppCompatActivity() {
             result = getRequest(url, header,dataString, verbose, autoredirect)
             return result
         }
-
         private fun getRequest(url:String, header: MutableMap<String,String?>, dataString:String, verbose:Boolean, autoredirect:Boolean):String {
             var result =""
             val connection = URL(url).openConnection() as HttpURLConnection
@@ -735,6 +734,7 @@ class FullscreenActivity : AppCompatActivity() {
                 for (el in header) connection.addRequestProperty( el.key, el.value)
                 connection.readTimeout = 25*1000
                 connection.instanceFollowRedirects=autoredirect
+                connection.setRequestProperty("Accept-Charset", "UTF-8")
                 if (dataString!="") {
                     connection.doOutput = true
                     connection.doInput = true
@@ -753,8 +753,8 @@ class FullscreenActivity : AppCompatActivity() {
                 if(connection.responseCode!= 200) {
                     result+="Error: "+connection.responseCode;
                     printToast("Error connect: "+connection.responseCode)
-                  //  this@FullscreenActivity.runOnUiThread {
-                        //this@FullscreenActivity.view.loadUrl("javascript:showinform('Error connect: " + connection.responseCode + "',1500)")
+                    //  this@FullscreenActivity.runOnUiThread {
+                    //this@FullscreenActivity.view.loadUrl("javascript:showinform('Error connect: " + connection.responseCode + "',1500)")
                     //}
                 }
                 if(verbose) {
@@ -763,13 +763,18 @@ class FullscreenActivity : AppCompatActivity() {
                     }
                     result +="\n"
                 }
-                result += connection.inputStream.use { it.reader().use { reader -> reader.readText() } }
+                var contentType = connection.getHeaderField("Content-Type")
+                var charset="UTF-8"
+                if(contentType.contains("windows-1251",true)){
+                    charset="windows-1251"
+                }
+                result += connection.inputStream.use { it.reader(Charset.forName(charset)).use { reader -> reader.readText() } }
             }
             catch (e:java.lang.Exception)
             {
-               // this@FullscreenActivity.runOnUiThread {
-                    //this@FullscreenActivity.view.loadUrl("javascript:Main.showLoad(0);")
-                    //this@FullscreenActivity.view.loadUrl("javascript:showinform('Error connect: " + connection.responseCode + "',1500)")
+                // this@FullscreenActivity.runOnUiThread {
+                //this@FullscreenActivity.view.loadUrl("javascript:Main.showLoad(0);")
+                //this@FullscreenActivity.view.loadUrl("javascript:showinform('Error connect: " + connection.responseCode + "',1500)")
                 //}
                 println("getRequest EXCEPT")
                 result+="Error: "+e.message
